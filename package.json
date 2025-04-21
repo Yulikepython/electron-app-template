@@ -1,0 +1,39 @@
+{
+  "name": "my-electron-app",
+  "version": "1.0.0",
+  "description": "A sample Electron application.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "author": "あなたの名前",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^25.0.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.example.myelectronapp",
+    "productName": "MyElectronApp",
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "src/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "deb"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    }
+  }
+}
