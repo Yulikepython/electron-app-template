@@ -3,16 +3,20 @@
   "version": "1.0.0",
   "description": "A sample Electron application.",
   "main": "main.js",
+  "homepage": "https://github.com/Yulikepython/electron-app-template",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "build:linux": "electron-builder --linux deb"
   },
-  "author": "あなたの名前",
+  "author": {
+    "name": "Hiroshi Nishito",
+    "email": "developer@itc.tokyo"
+  },
   "license": "MIT",
-  "dependencies": {
-    "electron": "^25.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "electron": "^25.0.0",
     "electron-builder": "^25.0.0"
   },
   "build": {
@@ -27,7 +31,8 @@
       "target": "nsis"
     },
     "linux": {
-      "target": "deb"
+      "target": "deb",
+      "maintainer": "Hiroshi Nishito <developer@itc.tokyo>"
     },
     "mac": {
       "target": [
