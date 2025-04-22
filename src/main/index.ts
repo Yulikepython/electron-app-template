@@ -1,6 +1,7 @@
 // src/main/index.ts
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
+import { URL } from 'url';
 
 // ハードウェアアクセラレーションを無効化して、Vulkan/VA-API関連のエラーを回避
 app.disableHardwareAcceleration();
@@ -14,6 +15,19 @@ app.commandLine.appendSwitch('ignore-gpu-blacklist');
 // 開発モードかどうかを判定
 const isDev = process.env.NODE_ENV === 'development';
 
+// 送信元の安全性を検証するヘルパー関数
+function validateSender(url: string): boolean {
+    const parsedUrl = new URL(url);
+
+    // 開発モードではlocalhostを許可、本番モードではfile://のみ許可
+    if (isDev) {
+        return parsedUrl.protocol === 'file:' ||
+            (parsedUrl.protocol === 'http:' && parsedUrl.hostname === 'localhost');
+    }
+
+    return parsedUrl.protocol === 'file:';
+}
+
 function createWindow(): void {
     // ウィンドウの作成
     const mainWindow = new BrowserWindow({
@@ -23,6 +37,7 @@ function createWindow(): void {
             preload: path.join(__dirname, '../preload/index.js'),
             contextIsolation: true,
             nodeIntegration: false,
+            sandbox: true, // サンドボックスモードを有効化
         },
     });
 
@@ -37,6 +52,38 @@ function createWindow(): void {
             ? process.env.ELECTRON_RENDERER_URL
             : `file://${path.join(__dirname, '../renderer/index.html')}`
     );
+
+    // 安全なIPC通信の設定
+    setupSecureIPC();
+}
+
+// 安全なIPC通信ハンドラーのセットアップ
+function setupSecureIPC(): void {
+    // シンプルなピングポング
+    ipcMain.handle('app:ping', (event) => {
+        // 送信元の安全性を検証
+        if (!validateSender(event.senderFrame.url)) {
+            console.error('不正な送信元からのリクエスト:', event.senderFrame.url);
+            return { error: 'Unauthorized origin' };
+        }
+
+        return { message: 'pong', timestamp: new Date().toISOString() };
+    });
+
+    // データ取得リクエスト
+    ipcMain.handle('app:getData', (event, args) => {
+        // 送信元の安全性を検証
+        if (!validateSender(event.senderFrame.url)) {
+            console.error('不正な送信元からのリクエスト:', event.senderFrame.url);
+            return { error: 'Unauthorized origin' };
+        }
+
+        // ここでは安全なデータを返すだけ
+        return {
+            result: 'success',
+            data: { message: 'セキュアなデータです', requestedWith: args }
+        };
+    });
 }
 
 // アプリが準備完了したらウィンドウを作成
