@@ -1,5 +1,8 @@
 // src/renderer/index.ts
 
+// モジュールとして扱うための空のエクスポート
+export { };
+
 // DOM要素の取得
 const button = document.getElementById('myButton') as HTMLButtonElement;
 const output = document.getElementById('message') as HTMLDivElement;
@@ -11,9 +14,10 @@ interface ElectronAPI {
         platform: NodeJS.Platform;
     };
     invokeAction: (channel: string, ...args: unknown[]) => Promise<unknown>;
-    on: (channel: string, listener: (...args: unknown[]) => void) => () => void;
+    on: (channel: string, listener: (message: unknown) => void) => () => void;
 }
 
+// グローバル型定義の拡張（モジュール内で行う）
 declare global {
     interface Window {
         electronAPI: ElectronAPI;
@@ -42,7 +46,7 @@ async function init(): Promise<void> {
         console.log('アプリケーション情報:', appInfo);
 
         // 通知リスナーを設定
-        const removeListener = window.electronAPI.on('app:notification', (message) => {
+        const removeListener = window.electronAPI.on('app:notification', (message: unknown) => {
             console.log('通知を受信:', message);
             // 必要に応じてUIを更新
         });
